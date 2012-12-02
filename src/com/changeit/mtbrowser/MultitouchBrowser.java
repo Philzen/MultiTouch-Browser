@@ -56,7 +56,7 @@ public class MultitouchBrowser extends Activity
 	    @Override
 	    public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback)
 	    {
-		callback.invoke(origin, true, false);
+		showConfirmGeolocation(origin, callback);
 	    }
 
 	    @Override	// enable alert javascript, will generate native Android alert
@@ -158,10 +158,32 @@ public class MultitouchBrowser extends Activity
 	{
 	    public void onClick(DialogInterface dialog, int id)
 	    {
-		MyActivity.finish();
+		dialog.dismiss();
 	    }
 	});
 	builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+	{
+	    public void onClick(DialogInterface dialog, int id)
+	    {
+		dialog.dismiss();
+	    }
+	});
+	AlertDialog dialog = builder.create();
+	dialog.show();
+    }
+    
+    protected void showConfirmGeolocation(final String origin, final GeolocationPermissions.Callback callback) {
+	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	builder.setMessage("Allow " + webview.getUrl() + " to access you position ?")
+		.setTitle("Geolocation");
+	builder.setPositiveButton("Locate Me", new DialogInterface.OnClickListener()
+	{
+	    public void onClick(DialogInterface dialog, int id)
+	    {
+		callback.invoke(origin, true, false);
+	    }
+	});
+	builder.setNegativeButton("Deny", new DialogInterface.OnClickListener()
 	{
 	    public void onClick(DialogInterface dialog, int id)
 	    {
