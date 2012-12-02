@@ -19,6 +19,7 @@ public class MultitouchBrowser extends Activity
 {
 
     WebView webview;
+    Boolean webviewVisible;
 
     /**
      * Called when the activity is first created.
@@ -27,9 +28,6 @@ public class MultitouchBrowser extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
 	super.onCreate(savedInstanceState);
-
-	webview = new WebView(this);
-	WebClient wmp = new WebClient(webview);
 
 	// Hide the status bar at the top
 	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -69,11 +67,16 @@ public class MultitouchBrowser extends Activity
 	    }
 	};
 
+	webview = new WebView(this);
+	new WebClient(webview);
 	webview.setWebChromeClient(wcc);
-	webview.setWebViewClient(wmp);
-	webview.loadUrl("http://maps.google.de");
+	displayStartupText();
     }
 
+    protected void displayStartupText() {
+	setContentView(R.layout.main);
+    }
+    
     /**
      * Getting the back button to work
      *
@@ -84,9 +87,11 @@ public class MultitouchBrowser extends Activity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-	if ((keyCode == KeyEvent.KEYCODE_BACK) && webview.canGoBack()) {
-	    webview.goBack();
-	    return true;
+	if ((keyCode == KeyEvent.KEYCODE_BACK) ) {
+	    if (webview.canGoBack() && webview.isShown()) {
+		webview.goBack();
+		return true;
+	    }
 	}
 	return super.onKeyDown(keyCode, event);
     }
@@ -100,9 +105,9 @@ public class MultitouchBrowser extends Activity
 	menu.add(1, 1, Menu.FIRST + 3, "Add");
 	menu.add(1, 0, Menu.FIRST + 4, "Go to URL...");
 
-	menu.add(2, 6, Menu.CATEGORY_ALTERNATIVE + 0, "Settings");
-	menu.add(2, 7, Menu.CATEGORY_ALTERNATIVE + 1, "Manage Bookmarks");
-	menu.add(2, 8, Menu.CATEGORY_ALTERNATIVE + 2, "Item8");
+	menu.add(1, 6, Menu.CATEGORY_ALTERNATIVE + 0, "Settings");
+	menu.add(1, 7, Menu.CATEGORY_ALTERNATIVE + 1, "Manage Bookmarks");
+	menu.add(1, 8, Menu.CATEGORY_ALTERNATIVE + 2, "Item8");
 
 	return true;
     }
@@ -114,15 +119,23 @@ public class MultitouchBrowser extends Activity
 	urls[0] = "http://openlayers.org/dev/examples/mobile.html";
 	urls[1] = "http://maps.google.de";
 	urls[2] = "http://ows.terrestris.de/webgis-client/index.html";
-	
+
 	Alert alert = new Alert(webview);
 	if (item.getGroupId() == 2) {
-	    alert.show("Loading " + urls[item.getItemId()-100]);
-	    webview.loadUrl(urls[item.getItemId()-100]);
+	    this.loadUrl(urls[item.getItemId() - 100]);
 	} else {
 	    alert.show("you clicked on item " + item.getTitle());
 	}
-	
+
 	return super.onOptionsItemSelected(item);
+    }
+
+    protected void loadUrl(String url)
+    {
+	if (!webview.isShown()) {
+	    setContentView(webview);
+	}
+
+	webview.loadUrl(url);
     }
 }
