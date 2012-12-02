@@ -21,6 +21,18 @@ public class MultitouchBrowser extends Activity
 
     WebView webview;
     Boolean webviewVisible;
+    String[] urls = {
+	"http://openlayers.org/dev/examples/mobile.html",
+	"http://maps.google.de",
+	"http://ows.terrestris.de/webgis-client/index.html",
+	"http://eightmedia.github.com/hammer.js/#touchme",
+	"http://scripty2.com/demos/touch/pinchariffic/",
+	"http://scripty2.com/demos/touch/testbed/"
+//	"http://leaflet.cloudmade.com/examples/mobile-example.html",
+//	"http://www.mapsmarker.com/wp-content/plugins/leaflet-maps-marker/leaflet-fullscreen.php?marker=1",
+//	"http://mapbox.com/easey/",
+//	"http://jacobtoye.github.com/Leaflet.draw/"
+    };
 
     /**
      * Called when the activity is first created.
@@ -73,7 +85,8 @@ public class MultitouchBrowser extends Activity
 	// remove white invisible scrollbar which otherwise generated white bar on the right side
 	webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
 
-	new WebClient(webview);
+	WebClient wmp = new WebClient(webview);
+//	wmp.setPolyfillAllTouches(true);
 	webview.setWebChromeClient(wcc);
 	displayStartupText();
     }
@@ -109,14 +122,11 @@ public class MultitouchBrowser extends Activity
     public boolean onCreateOptionsMenu(Menu menu)
     {
 	menu.add(2, 100, Menu.FIRST + 0, "Open Streetmap");
-	menu.add(2, 101, Menu.FIRST + 1, "Google Maps").setIcon(R.drawable.googlemaps);
-	menu.add(2, 102, Menu.FIRST + 2, "Terrestris");
-	menu.add(1, 1, Menu.FIRST + 3, "Add");
+	menu.add(1, 3, Menu.FIRST + 1, "Manage Bookmarks").setEnabled(false);
+	menu.add(1, 2, Menu.FIRST + 2, "Bookmarks");
+	menu.add(1, 1, Menu.FIRST + 3, "Add").setEnabled(false);
 	menu.add(1, 0, Menu.FIRST + 4, "Go to URL...");
-
-	menu.add(1, 6, Menu.CATEGORY_ALTERNATIVE + 0, "Settings");
-	menu.add(1, 7, Menu.CATEGORY_ALTERNATIVE + 1, "Manage Bookmarks");
-	menu.add(1, 8, Menu.CATEGORY_ALTERNATIVE + 2, "Item8");
+	menu.add(1, 4, Menu.FIRST + 5, "Preferences");
 
 	return true;
     }
@@ -124,16 +134,15 @@ public class MultitouchBrowser extends Activity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-	String[] urls = new String[8];
-	urls[0] = "http://openlayers.org/dev/examples/mobile.html";
-	urls[1] = "http://maps.google.de";
-	urls[2] = "http://ows.terrestris.de/webgis-client/index.html";
-
 	Alert alert = new Alert(webview);
 	if (item.getGroupId() == 2) {
 	    this.loadUrl(urls[item.getItemId() - 100]);
 	} else {
-	    alert.show("you clicked on item " + item.getTitle());
+	    if (item.getItemId() == 2) {
+		showLinkList();
+	    } else {
+		alert.show("you clicked on item " + item.getTitle());
+	    }
 	}
 
 	return super.onOptionsItemSelected(item);
@@ -171,8 +180,9 @@ public class MultitouchBrowser extends Activity
 	AlertDialog dialog = builder.create();
 	dialog.show();
     }
-    
-    protected void showConfirmGeolocation(final String origin, final GeolocationPermissions.Callback callback) {
+
+    protected void showConfirmGeolocation(final String origin, final GeolocationPermissions.Callback callback)
+    {
 	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	builder.setMessage("Allow " + webview.getUrl() + " to access you position ?")
 		.setTitle("Geolocation");
@@ -188,6 +198,35 @@ public class MultitouchBrowser extends Activity
 	    public void onClick(DialogInterface dialog, int id)
 	    {
 		dialog.dismiss();
+	    }
+	});
+	AlertDialog dialog = builder.create();
+	dialog.show();
+    }
+
+    public void showLinkList()
+    {
+	final String[] urlNames = {
+	    "Open Streetmap",
+	    "Google Maps",
+	    "Terrestris",
+	    "Hammer JS Demo",
+	    "Pinchariffic",
+	    "Scripty2 Testbed"
+//	    "Leaflet Mobile Demo",
+//	    "Modest Maps",
+//	    "VisualMobility.tk (Leaflet)"
+	};
+
+	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	builder.setTitle("Go to bookmark")
+		.setItems(urlNames, new DialogInterface.OnClickListener()
+	{
+	    public void onClick(DialogInterface dialog, int which)
+	    {
+		// The 'which' argument contains the index position
+		// of the selected item
+		loadUrl(urls[which]);
 	    }
 	});
 	AlertDialog dialog = builder.create();
