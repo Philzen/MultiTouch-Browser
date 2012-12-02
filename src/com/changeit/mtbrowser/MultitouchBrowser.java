@@ -1,6 +1,8 @@
 package com.changeit.mtbrowser;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -11,7 +13,6 @@ import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-import android.widget.TextView;
 import com.changeit.wmpolyfill.WebClient;
 import com.changeit.wmpolyfill.helper.Alert;
 
@@ -68,19 +69,20 @@ public class MultitouchBrowser extends Activity
 	};
 
 	webview = new WebView(this);
-	
+
 	// remove white invisible scrollbar which otherwise generated white bar on the right side
-	webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY); 
-	
+	webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+
 	new WebClient(webview);
 	webview.setWebChromeClient(wcc);
 	displayStartupText();
     }
 
-    protected void displayStartupText() {
+    protected void displayStartupText()
+    {
 	setContentView(R.layout.main);
     }
-    
+
     /**
      * Getting the back button to work
      *
@@ -91,10 +93,13 @@ public class MultitouchBrowser extends Activity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-	if ((keyCode == KeyEvent.KEYCODE_BACK) ) {
+	if ((keyCode == KeyEvent.KEYCODE_BACK)) {
 	    if (webview.canGoBack() && webview.isShown()) {
 		webview.goBack();
 		return true;
+	    } else if (webview.isShown()) {
+		showExitDialog();
+		return false;
 	    }
 	}
 	return super.onKeyDown(keyCode, event);
@@ -141,5 +146,29 @@ public class MultitouchBrowser extends Activity
 	}
 
 	webview.loadUrl(url);
+    }
+
+    protected void showExitDialog()
+    {
+	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	builder.setMessage("You want to proceed and close the Multitouch Browser ?")
+		.setTitle("Close");
+	final Activity MyActivity = this;
+	builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+	{
+	    public void onClick(DialogInterface dialog, int id)
+	    {
+		MyActivity.finish();
+	    }
+	});
+	builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+	{
+	    public void onClick(DialogInterface dialog, int id)
+	    {
+		dialog.dismiss();
+	    }
+	});
+	AlertDialog dialog = builder.create();
+	dialog.show();
     }
 }
