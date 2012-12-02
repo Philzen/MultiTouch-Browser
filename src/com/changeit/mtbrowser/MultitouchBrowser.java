@@ -68,6 +68,10 @@ public class MultitouchBrowser extends Activity
 	};
 
 	webview = new WebView(this);
+	
+	// remove white invisible scrollbar which otherwise generated white bar on the right side
+	webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY); 
+	
 	new WebClient(webview);
 	webview.setWebChromeClient(wcc);
 	displayStartupText();
