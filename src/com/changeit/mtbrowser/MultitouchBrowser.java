@@ -27,12 +27,21 @@ public class MultitouchBrowser extends Activity
 	"http://ows.terrestris.de/webgis-client/index.html",
 	"http://eightmedia.github.com/hammer.js/#touchme",
 	"http://scripty2.com/demos/touch/pinchariffic/",
-	"http://scripty2.com/demos/touch/testbed/"
+	"http://scripty2.com/demos/touch/testbed/",
+	"http://www.dhteumeuleu.com/never-force",
+//	"http://www.pluginmedia.net/dev/infector/"
 //	"http://leaflet.cloudmade.com/examples/mobile-example.html",
 //	"http://www.mapsmarker.com/wp-content/plugins/leaflet-maps-marker/leaflet-fullscreen.php?marker=1",
 //	"http://mapbox.com/easey/",
 //	"http://jacobtoye.github.com/Leaflet.draw/"
     };
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+	super.onRestoreInstanceState(savedInstanceState); 
+	//To change body of generated methods, choose Tools | Templates.
+    }
 
     /**
      * Called when the activity is first created.
@@ -212,7 +221,9 @@ public class MultitouchBrowser extends Activity
 	    "Terrestris",
 	    "Hammer JS Demo",
 	    "Pinchariffic",
-	    "Scripty2 Testbed"
+	    "Scripty2 Testbed",
+	    "Game"
+		
 //	    "Leaflet Mobile Demo",
 //	    "Modest Maps",
 //	    "VisualMobility.tk (Leaflet)"
