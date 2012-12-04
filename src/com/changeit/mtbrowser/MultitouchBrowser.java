@@ -4,21 +4,27 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.Button;
+import android.widget.EditText;
 import com.changeit.wmpolyfill.WebClient;
 import com.changeit.wmpolyfill.helper.Alert;
 
 public class MultitouchBrowser extends Activity
 {
 
+    private Button goLoadUrl;
+    private EditText urlTextInput;
     WebView webview;
     Boolean webviewVisible;
     String[] urls = {
@@ -28,18 +34,17 @@ public class MultitouchBrowser extends Activity
 	"http://eightmedia.github.com/hammer.js/#touchme",
 	"http://scripty2.com/demos/touch/pinchariffic/",
 	"http://scripty2.com/demos/touch/testbed/",
-	"http://www.dhteumeuleu.com/never-force",
-//	"http://www.pluginmedia.net/dev/infector/"
-//	"http://leaflet.cloudmade.com/examples/mobile-example.html",
-//	"http://www.mapsmarker.com/wp-content/plugins/leaflet-maps-marker/leaflet-fullscreen.php?marker=1",
-//	"http://mapbox.com/easey/",
-//	"http://jacobtoye.github.com/Leaflet.draw/"
+	"http://www.dhteumeuleu.com/never-force", //	"http://www.pluginmedia.net/dev/infector/"
+    //	"http://leaflet.cloudmade.com/examples/mobile-example.html",
+    //	"http://www.mapsmarker.com/wp-content/plugins/leaflet-maps-marker/leaflet-fullscreen.php?marker=1",
+    //	"http://mapbox.com/easey/",
+    //	"http://jacobtoye.github.com/Leaflet.draw/"
     };
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState)
     {
-	super.onRestoreInstanceState(savedInstanceState); 
+	super.onRestoreInstanceState(savedInstanceState);
 	//To change body of generated methods, choose Tools | Templates.
     }
 
@@ -97,12 +102,13 @@ public class MultitouchBrowser extends Activity
 	WebClient wmp = new WebClient(webview);
 //	wmp.setPolyfillAllTouches(true);
 	webview.setWebChromeClient(wcc);
-	displayStartupText();
+	startUp();
     }
 
-    protected void displayStartupText()
+    protected void startUp()
     {
 	setContentView(R.layout.main);
+	initUrlBox();
     }
 
     /**
@@ -120,9 +126,11 @@ public class MultitouchBrowser extends Activity
 		webview.goBack();
 		return true;
 	    } else if (webview.isShown()) {
-		showExitDialog();
-		return false;
-	    }
+		setContentView(R.layout.main);
+		return true;
+	    } 
+	    showExitDialog();
+	    return false;
 	}
 	return super.onKeyDown(keyCode, event);
     }
@@ -149,6 +157,8 @@ public class MultitouchBrowser extends Activity
 	} else {
 	    if (item.getItemId() == 2) {
 		showLinkList();
+	    } else if (item.getItemId() == 0) {
+		setContentView(R.layout.main);
 	    } else {
 		alert.show("you clicked on item " + item.getTitle());
 	    }
@@ -223,7 +233,6 @@ public class MultitouchBrowser extends Activity
 	    "Pinchariffic",
 	    "Scripty2 Testbed",
 	    "Game"
-		
 //	    "Leaflet Mobile Demo",
 //	    "Modest Maps",
 //	    "VisualMobility.tk (Leaflet)"
@@ -242,5 +251,43 @@ public class MultitouchBrowser extends Activity
 	});
 	AlertDialog dialog = builder.create();
 	dialog.show();
+    }
+
+    public void initUrlBox()
+    {
+
+	goLoadUrl = (Button) findViewById(R.id.UrlButton);
+	urlTextInput = (EditText) findViewById(R.id.UrlInput);
+
+	urlTextInput.setOnKeyListener(new View.OnKeyListener()
+	{
+	    public boolean onKey(View arg0, int arg1, KeyEvent arg2)
+	    {
+		if ((arg1 == KeyEvent.KEYCODE_ENTER)) {
+		    loadUrl(getSafeUrl(urlTextInput.getText().toString()));
+		    return true;
+		}
+		return false;
+	    }
+	});
+	goLoadUrl.setOnClickListener(
+		new View.OnClickListener()
+	{
+	    public void onClick(View view)
+	    {
+		loadUrl(getSafeUrl(urlTextInput.getText().toString()));
+	    }
+	});
+    }
+
+    private String getSafeUrl(String url)
+    {
+	if (!url.startsWith("http")) {
+	    while (url.startsWith("/") || url.startsWith(":")) {
+		url = url.substring(1);
+	    }
+	    url = "http://" + url;
+	}
+	return url;
     }
 }
