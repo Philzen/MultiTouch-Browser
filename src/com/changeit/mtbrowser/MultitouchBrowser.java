@@ -2,21 +2,25 @@ package com.changeit.mtbrowser;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import com.changeit.wmpolyfill.WebClient;
 import com.changeit.wmpolyfill.helper.Alert;
 
@@ -27,6 +31,8 @@ public class MultitouchBrowser extends Activity
     private EditText urlTextInput;
     WebView webview;
     Boolean webviewVisible;
+    protected FrameLayout webViewPlaceholder;
+    private boolean stateIsLoading = false;
     String[] urls = {
 	"http://openlayers.org/dev/examples/mobile.html",
 	"http://maps.google.de",
@@ -48,6 +54,19 @@ public class MultitouchBrowser extends Activity
 	//To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+	LinearLayout urlInputField = ((LinearLayout) findViewById(R.id.UrlInputWrapper));
+	if (event.getY() < 100) {
+	    urlInputField.setVisibility(View.VISIBLE);
+	} else if (urlInputField.getVisibility() == View.VISIBLE) {
+	    urlInputField.setVisibility(View.GONE);
+	}
+
+	return super.onTouchEvent(event); //To change body of generated methods, choose Tools | Templates.
+    }
+
     /**
      * Called when the activity is first created.
      */
@@ -63,51 +82,68 @@ public class MultitouchBrowser extends Activity
 	// Makes Progress bar Visible
 	getWindow().setFeatureInt(Window.FEATURE_PROGRESS, Window.PROGRESS_VISIBILITY_ON);
 
-	final Activity MyActivity = this;
-	WebChromeClient wcc = new WebChromeClient()
-	{
-	    @Override
-	    public void onProgressChanged(WebView view, int progress)
-	    {
-		//Make the bar disappear after URL is loaded, and changes string to Loading...
-		MyActivity.setTitle("Loading " + view.getUrl() + " ... ");
-		MyActivity.setProgress(progress * 100); //Make the bar disappear after URL is loaded
-
-		// Return the app name after finish loading
-		if (progress == 100) {
-		    MyActivity.setTitle(R.string.app_name);
-		}
-	    }
-
-	    @Override
-	    public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback)
-	    {
-		showConfirmGeolocation(origin, callback);
-	    }
-
-	    @Override	// enable alert javascript, will generate native Android alert
-	    public boolean onJsAlert(WebView view, String url, String message, JsResult result)
-	    {
-		Alert alert = new Alert(view);
-		alert.show(message + ", Javascript Result [" + result.toString() + "];");
-		return true;
-	    }
-	};
-
-	webview = new WebView(this);
-
-	// remove white invisible scrollbar which otherwise generated white bar on the right side
-	webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-
-	WebClient wmp = new WebClient(webview);
-//	wmp.setPolyfillAllTouches(true);
-	webview.setWebChromeClient(wcc);
-	startUp();
+	setContentView(R.layout.main);
+	initUI();
     }
 
-    protected void startUp()
+    protected void initUI()
     {
-	setContentView(R.layout.main);
+	webViewPlaceholder = ((FrameLayout) findViewById(R.id.webViewPlaceholder));
+	if (webview == null) {
+	    final Activity MyActivity = this;
+	    final LinearLayout urlInputField = ((LinearLayout) findViewById(R.id.UrlInputWrapper));
+	    final EditText urlTextInput = (EditText) findViewById(R.id.UrlInput);
+	    WebChromeClient wcc;
+	    wcc = new WebChromeClient()
+	    {
+		@Override
+		public void onProgressChanged(WebView view, int progress)
+		{
+		    // Return the app name after finish loading
+		    if (stateIsLoading == false) {
+
+			//Make the bar disappear after URL is loaded, and changes string to Loading...
+			MyActivity.setTitle("Loading ... ");
+			urlInputField.setVisibility(View.VISIBLE);
+			stateIsLoading = true;
+		    } else if (progress == 100) {
+			MyActivity.setTitle(view.getTitle());
+			urlInputField.setVisibility(View.GONE);
+			stateIsLoading = false;
+		    } else if (progress > 10 && urlTextInput.hasFocus() == false) {
+			urlTextInput.setText(view.getUrl());
+		    }
+		    MyActivity.setProgress(progress * 100); //Make the bar disappear after URL is loaded
+
+		}
+
+		@Override
+		public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback)
+		{
+		    showConfirmGeolocation(origin, callback);
+		}
+
+		@Override	// enable alert javascript, will generate native Android alert
+		public boolean onJsAlert(WebView view, String url, String message, JsResult result)
+		{
+		    Alert alert = new Alert(view);
+		    alert.show(message + ", Javascript Result [" + result.toString() + "];");
+		    return true;
+		}
+	    };
+
+	    webview = new WebView(this);
+
+	    // remove white invisible scrollbar which otherwise generated white bar on the right side
+	    webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+
+	    WebClient wmp = new WebClient(webview);
+//	wmp.setPolyfillAllTouches(true);
+	    webview.setWebChromeClient(wcc);
+
+	}
+
+	webViewPlaceholder.addView(webview);
 	initUrlBox();
     }
 
@@ -125,10 +161,7 @@ public class MultitouchBrowser extends Activity
 	    if (webview.canGoBack() && webview.isShown()) {
 		webview.goBack();
 		return true;
-	    } else if (webview.isShown()) {
-		setContentView(R.layout.main);
-		return true;
-	    } 
+	    }
 	    showExitDialog();
 	    return false;
 	}
@@ -169,10 +202,6 @@ public class MultitouchBrowser extends Activity
 
     protected void loadUrl(String url)
     {
-	if (!webview.isShown()) {
-	    setContentView(webview);
-	}
-
 	webview.loadUrl(url);
     }
 
@@ -186,7 +215,7 @@ public class MultitouchBrowser extends Activity
 	{
 	    public void onClick(DialogInterface dialog, int id)
 	    {
-		dialog.dismiss();
+		MyActivity.finish();
 	    }
 	});
 	builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
@@ -255,27 +284,19 @@ public class MultitouchBrowser extends Activity
 
     public void initUrlBox()
     {
-
-	goLoadUrl = (Button) findViewById(R.id.UrlButton);
 	urlTextInput = (EditText) findViewById(R.id.UrlInput);
-
 	urlTextInput.setOnKeyListener(new View.OnKeyListener()
 	{
 	    public boolean onKey(View arg0, int arg1, KeyEvent arg2)
 	    {
 		if ((arg1 == KeyEvent.KEYCODE_ENTER)) {
+		    InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		    in.hideSoftInputFromWindow(urlTextInput.getApplicationWindowToken(),
+			    InputMethodManager.HIDE_NOT_ALWAYS);
 		    loadUrl(getSafeUrl(urlTextInput.getText().toString()));
 		    return true;
 		}
 		return false;
-	    }
-	});
-	goLoadUrl.setOnClickListener(
-		new View.OnClickListener()
-	{
-	    public void onClick(View view)
-	    {
-		loadUrl(getSafeUrl(urlTextInput.getText().toString()));
 	    }
 	});
     }
