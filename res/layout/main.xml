@@ -4,15 +4,15 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<LinearLayout android:orientation="horizontal" android:id="@+id/UrlInputWrapper" 
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    >
-    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" 
+    android:layout_height="wrap_content">
+    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content"
 	      android:id="@+id/UrlInput" android:hint="Enter URL" android:inputType="text" />
-    <Button android:id="@+id/UrlButton" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="OK"/>
 </LinearLayout>
+<FrameLayout android:id="@+id/webViewPlaceholder"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"/>
 <TextView  android:id="@+id/MainText"
     android:layout_width="fill_parent" 
     android:layout_height="fill_parent" 
