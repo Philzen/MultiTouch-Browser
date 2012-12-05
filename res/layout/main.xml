@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<LinearLayout android:orientation="horizontal" android:id="@+id/UrlInputWrapper" 
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
-    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content"
-	      android:id="@+id/UrlInput" android:hint="Enter URL" android:inputType="text" />
-</LinearLayout>
-<FrameLayout android:id="@+id/webViewPlaceholder"
-  android:layout_width="fill_parent"
-  android:layout_height="fill_parent"/>
-<TextView  android:id="@+id/MainText"
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent" 
-    android:gravity="center"
-    android:text="Hit your phones' menu button to start browsing"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	     android:layout_width="fill_parent"
+	     android:layout_height="fill_parent"
+>
+    <FrameLayout android:id="@+id/webViewPlaceholder"
+		 android:layout_width="fill_parent"
+		 android:layout_height="fill_parent"/>
+    <TextView  android:id="@+id/MainText"
+	       android:layout_width="fill_parent" 
+	       android:layout_height="wrap_content" 
+	       android:gravity="top"
     />
-</LinearLayout>
+    <LinearLayout android:id="@+id/UrlInputWrapper" android:orientation="horizontal" 
+		  android:layout_width="fill_parent"
+		  android:layout_height="wrap_content"
+	    android:background="@color/dark_background"
+    >
+    
+	<EditText 
+	    android:id="@+id/UrlInput" 
+	    android:hint="Enter URL" 
+	    android:inputType="text" 
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_gravity="left|top"
+	/>
+    </LinearLayout>
+</FrameLayout>
 
