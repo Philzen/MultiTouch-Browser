@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import com.changeit.wmpolyfill.WebClient;
 import com.changeit.wmpolyfill.helper.Alert;
 
@@ -29,23 +30,41 @@ public class MultitouchBrowser extends Activity
 
     private Button goLoadUrl;
     private EditText urlTextInput;
+    private LinearLayout AddressBar;
     WebView webview;
     Boolean webviewVisible;
+    protected WebChromeClient wcc;
     protected FrameLayout webViewPlaceholder;
     private boolean stateIsLoading = false;
-    String[] urls = {
-	"http://openlayers.org/dev/examples/mobile.html",
-	"http://maps.google.de",
-	"http://ows.terrestris.de/webgis-client/index.html",
-	"http://eightmedia.github.com/hammer.js/#touchme",
-	"http://scripty2.com/demos/touch/pinchariffic/",
-	"http://scripty2.com/demos/touch/testbed/",
-	"http://www.dhteumeuleu.com/never-force", //	"http://www.pluginmedia.net/dev/infector/"
-    //	"http://leaflet.cloudmade.com/examples/mobile-example.html",
-    //	"http://www.mapsmarker.com/wp-content/plugins/leaflet-maps-marker/leaflet-fullscreen.php?marker=1",
-    //	"http://mapbox.com/easey/",
-    //	"http://jacobtoye.github.com/Leaflet.draw/"
-    };
+    final String[] urls;
+    final String[] urlNames;
+    
+    public MultitouchBrowser()
+    {
+	urls = new String[]{
+	    "http://openlayers.org/dev/examples/mobile.html",
+	    "http://maps.google.de",
+	    "http://ows.terrestris.de/webgis-client/index.html",
+	    "http://help.arcgis.com/en/webapi/javascript/arcgis/samples/mobile_simplemap/index.html",
+	    "http://seb.ly/demos/JSTouchController/TouchControl.html",
+	    "http://paulirish.com/demo/multi",
+	    "http://spark.attrakt.se/",
+	    "http://games.remvst.com/"
+	};
+	urlNames = new String[]{
+	    "Open Streetmap",
+	    "Google Maps",
+	    "Terrestris",
+	    "ArcGis Mobile Example",
+	    "Asteroids Controller",
+	    "Fingerpainting",
+	    "Multitouch Sparks",
+	    "Games"
+//	    "Leaflet Mobile Demo",
+//	    "Modest Maps",
+//	    "VisualMobility.tk (Leaflet)"
+	};
+    }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState)
@@ -54,14 +73,32 @@ public class MultitouchBrowser extends Activity
 	//To change body of generated methods, choose Tools | Templates.
     }
 
+    public void showUrlBar()
+    {
+	AddressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void hideUrlBar()
+    {
+	AddressBar.setVisibility(View.GONE);
+    }
+
+    public void toggleAddressBar()
+    {
+	if (AddressBar.getVisibility() == View.VISIBLE) {
+	    hideUrlBar();
+	} else {
+	    showUrlBar();
+	}
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-	LinearLayout urlInputField = ((LinearLayout) findViewById(R.id.UrlInputWrapper));
 	if (event.getY() < 100) {
-	    urlInputField.setVisibility(View.VISIBLE);
-	} else if (urlInputField.getVisibility() == View.VISIBLE) {
-	    urlInputField.setVisibility(View.GONE);
+	    showUrlBar();
+	} else {
+	    hideUrlBar();
 	}
 
 	return super.onTouchEvent(event); //To change body of generated methods, choose Tools | Templates.
@@ -88,12 +125,12 @@ public class MultitouchBrowser extends Activity
 
     protected void initUI()
     {
+	AddressBar = ((LinearLayout) findViewById(R.id.UrlInputWrapper));
 	webViewPlaceholder = ((FrameLayout) findViewById(R.id.webViewPlaceholder));
 	if (webview == null) {
 	    final Activity MyActivity = this;
 	    final LinearLayout urlInputField = ((LinearLayout) findViewById(R.id.UrlInputWrapper));
 	    final EditText urlTextInput = (EditText) findViewById(R.id.UrlInput);
-	    WebChromeClient wcc;
 	    wcc = new WebChromeClient()
 	    {
 		@Override
@@ -104,7 +141,6 @@ public class MultitouchBrowser extends Activity
 
 			//Make the bar disappear after URL is loaded, and changes string to Loading...
 			MyActivity.setTitle("Loading ... ");
-			urlInputField.setVisibility(View.VISIBLE);
 			stateIsLoading = true;
 		    } else if (progress == 100) {
 			MyActivity.setTitle(view.getTitle());
@@ -138,7 +174,7 @@ public class MultitouchBrowser extends Activity
 	    webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
 
 	    WebClient wmp = new WebClient(webview);
-//	wmp.setPolyfillAllTouches(true);
+	    wmp.setPolyfillAllTouches(true);
 	    webview.setWebChromeClient(wcc);
 
 	}
@@ -164,6 +200,9 @@ public class MultitouchBrowser extends Activity
 	    }
 	    showExitDialog();
 	    return false;
+	} else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
+	    toggleAddressBar();
+	    return true;
 	}
 	return super.onKeyDown(keyCode, event);
     }
@@ -202,6 +241,8 @@ public class MultitouchBrowser extends Activity
 
     protected void loadUrl(String url)
     {
+	showUrlBar();
+	urlTextInput.setText(url, TextView.BufferType.NORMAL);
 	webview.loadUrl(url);
     }
 
@@ -254,19 +295,6 @@ public class MultitouchBrowser extends Activity
 
     public void showLinkList()
     {
-	final String[] urlNames = {
-	    "Open Streetmap",
-	    "Google Maps",
-	    "Terrestris",
-	    "Hammer JS Demo",
-	    "Pinchariffic",
-	    "Scripty2 Testbed",
-	    "Game"
-//	    "Leaflet Mobile Demo",
-//	    "Modest Maps",
-//	    "VisualMobility.tk (Leaflet)"
-	};
-
 	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	builder.setTitle("Go to bookmark")
 		.setItems(urlNames, new DialogInterface.OnClickListener()
@@ -287,9 +315,9 @@ public class MultitouchBrowser extends Activity
 	urlTextInput = (EditText) findViewById(R.id.UrlInput);
 	urlTextInput.setOnKeyListener(new View.OnKeyListener()
 	{
-	    public boolean onKey(View arg0, int arg1, KeyEvent arg2)
+	    public boolean onKey(View arg0, int keyCode, KeyEvent arg2)
 	    {
-		if ((arg1 == KeyEvent.KEYCODE_ENTER)) {
+		if ((keyCode == KeyEvent.KEYCODE_ENTER)) {
 		    InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		    in.hideSoftInputFromWindow(urlTextInput.getApplicationWindowToken(),
 			    InputMethodManager.HIDE_NOT_ALWAYS);
