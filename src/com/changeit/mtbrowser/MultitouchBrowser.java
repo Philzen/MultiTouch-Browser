@@ -33,6 +33,7 @@ public class MultitouchBrowser extends Activity
     private LinearLayout AddressBar;
     WebView webview;
     Boolean webviewVisible;
+    protected WebClient webviewMultitouchPolyfill;
     protected WebChromeClient wcc;
     protected FrameLayout webViewPlaceholder;
     private boolean stateIsLoading = false;
@@ -131,7 +132,6 @@ public class MultitouchBrowser extends Activity
 	webViewPlaceholder = ((FrameLayout) findViewById(R.id.webViewPlaceholder));
 	if (webview == null) {
 	    final Activity MyActivity = this;
-	    final LinearLayout urlInputField = ((LinearLayout) findViewById(R.id.UrlInputWrapper));
 	    urlTextInput = (EditText) findViewById(R.id.UrlInput);
 	    wcc = new WebChromeClient()
 	    {
@@ -175,8 +175,8 @@ public class MultitouchBrowser extends Activity
 	    // remove white invisible scrollbar which otherwise generated white bar on the right side
 	    webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
 
-	    WebClient wmp = new WebClient(webview);
-	    wmp.setPolyfillAllTouches(false);
+	    webviewMultitouchPolyfill = new WebClient(webview);
+	    webviewMultitouchPolyfill.setPolyfillAllTouches(false);
 	    webview.setWebChromeClient(wcc);
 	}
 
@@ -211,15 +211,13 @@ public class MultitouchBrowser extends Activity
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-menu.setGroupCheckable(1, true, false);
-	menu.add(1, 4, Menu.FIRST + 0, "Multitouch");
-	menu.add(1, 3, Menu.FIRST + 1, "Polyfill all").setCheckable(true).setChecked(false);
+	menu.add(1, 4, Menu.FIRST + 0, "Multitouch").setIcon(android.R.drawable.checkbox_on_background).setChecked(true);
+	menu.add(1, 3, Menu.FIRST + 1, "Polyfill all").setIcon(android.R.drawable.checkbox_off_background).setChecked(false);
 	menu.add(1, 2, Menu.FIRST + 2, "Bookmarks");
 	menu.add(1, 1, Menu.FIRST + 3, "Add").setEnabled(false);
 	menu.add(1, 0, Menu.FIRST + 4, "Go to URL...");
 	menu.add(1, 5, Menu.FIRST + 5, "Preferences");
-
-	return true;
+	return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -233,8 +231,18 @@ menu.setGroupCheckable(1, true, false);
 		showUrlBar(true);
 	    } else if (item.getItemId() == 2) {
 		showLinkList();
-	    } else if (item.getItemId() == 0) {
-		setContentView(R.layout.main);
+	    } else if (item.getItemId() == 3) {
+		webviewMultitouchPolyfill.setPolyfillAllTouches(item.isChecked());
+		toggleMenuCheckbox(item);
+	    } else if (item.getItemId() == 4) {
+		if (item.isChecked()) { 
+		    webview.setWebViewClient(null);
+		    webviewMultitouchPolyfill = null;
+		} else {
+		    webviewMultitouchPolyfill = new WebClient(webview);
+		    webview.setWebViewClient(webviewMultitouchPolyfill);
+		}
+		toggleMenuCheckbox(item);
 	    } else {
 		alert.show("you clicked on item " + item.getTitle());
 	    }
@@ -243,6 +251,18 @@ menu.setGroupCheckable(1, true, false);
 	return super.onOptionsItemSelected(item);
     }
 
+    protected boolean toggleMenuCheckbox(MenuItem item) {
+	if (item.isChecked()) {
+	    item.setIcon(android.R.drawable.checkbox_off_background);
+	    item.setChecked(false);
+	    return false;
+	} else {
+	    item.setIcon(android.R.drawable.checkbox_on_background);
+	    item.setChecked(true);
+	    return true;
+	}
+    }
+    
     protected void loadUrl(String url)
     {
 	urlTextInput.setText(url, TextView.BufferType.NORMAL);
