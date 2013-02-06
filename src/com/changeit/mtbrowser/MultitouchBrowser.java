@@ -73,9 +73,11 @@ public class MultitouchBrowser extends Activity
 	//To change body of generated methods, choose Tools | Templates.
     }
 
-    public void showUrlBar()
+    public void showUrlBar(boolean focus)
     {
 	AddressBar.setVisibility(View.VISIBLE);
+	if (focus)
+	    AddressBar.requestFocus();
     }
 
     public void hideUrlBar()
@@ -83,12 +85,12 @@ public class MultitouchBrowser extends Activity
 	AddressBar.setVisibility(View.GONE);
     }
 
-    public void toggleAddressBar()
+    public void toggleAddressBar(boolean focus)
     {
 	if (AddressBar.getVisibility() == View.VISIBLE) {
 	    hideUrlBar();
 	} else {
-	    showUrlBar();
+	    showUrlBar(focus);
 	}
     }
 
@@ -96,12 +98,12 @@ public class MultitouchBrowser extends Activity
     public boolean onTouchEvent(MotionEvent event)
     {
 	if (event.getY() < 100) {
-	    showUrlBar();
+	    showUrlBar(false);
 	} else {
 	    hideUrlBar();
 	}
 
-	return super.onTouchEvent(event); //To change body of generated methods, choose Tools | Templates.
+	return super.onTouchEvent(event);
     }
 
     /**
@@ -130,7 +132,7 @@ public class MultitouchBrowser extends Activity
 	if (webview == null) {
 	    final Activity MyActivity = this;
 	    final LinearLayout urlInputField = ((LinearLayout) findViewById(R.id.UrlInputWrapper));
-	    final EditText urlTextInput = (EditText) findViewById(R.id.UrlInput);
+	    urlTextInput = (EditText) findViewById(R.id.UrlInput);
 	    wcc = new WebChromeClient()
 	    {
 		@Override
@@ -138,13 +140,13 @@ public class MultitouchBrowser extends Activity
 		{
 		    // Return the app name after finish loading
 		    if (stateIsLoading == false) {
-
 			//Make the bar disappear after URL is loaded, and changes string to Loading...
 			MyActivity.setTitle("Loading ... ");
+			showUrlBar(false); 
 			stateIsLoading = true;
 		    } else if (progress == 100) {
 			MyActivity.setTitle(view.getTitle());
-			urlInputField.setVisibility(View.GONE);
+			hideUrlBar();
 			stateIsLoading = false;
 		    } else if (progress > 10 && urlTextInput.hasFocus() == false) {
 			urlTextInput.setText(view.getUrl());
@@ -174,9 +176,8 @@ public class MultitouchBrowser extends Activity
 	    webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
 
 	    WebClient wmp = new WebClient(webview);
-	    wmp.setPolyfillAllTouches(true);
+	    wmp.setPolyfillAllTouches(false);
 	    webview.setWebChromeClient(wcc);
-
 	}
 
 	webViewPlaceholder.addView(webview);
@@ -201,7 +202,7 @@ public class MultitouchBrowser extends Activity
 	    showExitDialog();
 	    return false;
 	} else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-	    toggleAddressBar();
+	    toggleAddressBar(true);
 	    return true;
 	}
 	return super.onKeyDown(keyCode, event);
@@ -210,12 +211,13 @@ public class MultitouchBrowser extends Activity
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-	menu.add(2, 100, Menu.FIRST + 0, "Open Streetmap");
-	menu.add(1, 3, Menu.FIRST + 1, "Manage Bookmarks").setEnabled(false);
+menu.setGroupCheckable(1, true, false);
+	menu.add(1, 4, Menu.FIRST + 0, "Multitouch");
+	menu.add(1, 3, Menu.FIRST + 1, "Polyfill all").setCheckable(true).setChecked(false);
 	menu.add(1, 2, Menu.FIRST + 2, "Bookmarks");
 	menu.add(1, 1, Menu.FIRST + 3, "Add").setEnabled(false);
 	menu.add(1, 0, Menu.FIRST + 4, "Go to URL...");
-	menu.add(1, 4, Menu.FIRST + 5, "Preferences");
+	menu.add(1, 5, Menu.FIRST + 5, "Preferences");
 
 	return true;
     }
@@ -227,7 +229,9 @@ public class MultitouchBrowser extends Activity
 	if (item.getGroupId() == 2) {
 	    this.loadUrl(urls[item.getItemId() - 100]);
 	} else {
-	    if (item.getItemId() == 2) {
+	    if (item.getItemId() == 0) {
+		showUrlBar(true);
+	    } else if (item.getItemId() == 2) {
 		showLinkList();
 	    } else if (item.getItemId() == 0) {
 		setContentView(R.layout.main);
@@ -241,7 +245,6 @@ public class MultitouchBrowser extends Activity
 
     protected void loadUrl(String url)
     {
-	showUrlBar();
 	urlTextInput.setText(url, TextView.BufferType.NORMAL);
 	webview.loadUrl(url);
     }
@@ -312,7 +315,6 @@ public class MultitouchBrowser extends Activity
 
     public void initUrlBox()
     {
-	urlTextInput = (EditText) findViewById(R.id.UrlInput);
 	urlTextInput.setOnKeyListener(new View.OnKeyListener()
 	{
 	    public boolean onKey(View arg0, int keyCode, KeyEvent arg2)

@@ -18,7 +18,7 @@
     >
     
 	<EditText 
-	    android:id="@+id/UrlInput" 
+	    android:id="@+id/UrlInput" android:selectAllOnFocus="true" 
 	    android:hint="Enter URL" 
 	    android:inputType="text" 
 	    android:layout_width="fill_parent"
