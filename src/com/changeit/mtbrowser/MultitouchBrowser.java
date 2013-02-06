@@ -31,6 +31,7 @@ public class MultitouchBrowser extends Activity
     private Button goLoadUrl;
     private EditText urlTextInput;
     private LinearLayout AddressBar;
+    private Menu menu;
     WebView webview;
     Boolean webviewVisible;
     protected WebClient webviewMultitouchPolyfill;
@@ -211,6 +212,7 @@ public class MultitouchBrowser extends Activity
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
+	this.menu = menu;
 	menu.add(1, 4, Menu.FIRST + 0, "Multitouch").setIcon(android.R.drawable.checkbox_on_background).setChecked(true);
 	menu.add(1, 3, Menu.FIRST + 1, "Polyfill all").setIcon(android.R.drawable.checkbox_off_background).setChecked(false);
 	menu.add(1, 2, Menu.FIRST + 2, "Bookmarks");
@@ -236,11 +238,11 @@ public class MultitouchBrowser extends Activity
 		toggleMenuCheckbox(item);
 	    } else if (item.getItemId() == 4) {
 		if (item.isChecked()) { 
-		    webview.setWebViewClient(null);
-		    webviewMultitouchPolyfill = null;
+		    menu.findItem(3).setEnabled(false);
+		    webviewMultitouchPolyfill.setEnabled(false);
 		} else {
-		    webviewMultitouchPolyfill = new WebClient(webview);
-		    webview.setWebViewClient(webviewMultitouchPolyfill);
+		    menu.findItem(3).setEnabled(true);
+		    webviewMultitouchPolyfill.setEnabled(true);
 		}
 		toggleMenuCheckbox(item);
 	    } else {
