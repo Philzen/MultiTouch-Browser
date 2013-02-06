@@ -19,10 +19,12 @@ import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import com.changeit.wmpolyfill.WebClient;
 import com.changeit.wmpolyfill.helper.Alert;
@@ -46,24 +48,30 @@ public class MultitouchBrowser extends Activity
     public MultitouchBrowser()
     {
 	urls = new String[]{
+	    null,
 	    "http://openlayers.org/dev/examples/mobile.html",
 	    "http://maps.google.de",
 	    "http://ows.terrestris.de/webgis-client/index.html",
 	    "http://help.arcgis.com/en/webapi/javascript/arcgis/samples/mobile_simplemap/index.html",
+	    null,
 	    "http://seb.ly/demos/JSTouchController/TouchControl.html",
 	    "http://paulirish.com/demo/multi",
 	    "http://spark.attrakt.se/",
+	    null,
 	    "http://games.remvst.com/"
 	};
 	urlNames = new String[]{
-	    "Open Streetmap",
-	    "Google Maps",
-	    "Terrestris",
-	    "ArcGis Mobile Example",
-	    "Asteroids Controller",
-	    "Fingerpainting",
-	    "Multitouch Sparks",
-	    "Games"
+	    "Maps",
+	    "    Open Streetmap",
+	    "    Google Maps",
+	    "    Terrestris",
+	    "    ArcGis Mobile Example",
+	    "Multitouch Visualisation",
+	    "    Asteroids Controller",
+	    "    Fingerpainting",
+	    "    Multitouch Sparks",
+	    "Games",
+	    "    Remyst.com"
 //	    "Leaflet Mobile Demo",
 //	    "Modest Maps",
 //	    "VisualMobility.tk (Leaflet)"
@@ -343,17 +351,34 @@ public class MultitouchBrowser extends Activity
     {
 	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	builder.setTitle("Go to bookmark")
-		.setItems(urlNames, new DialogInterface.OnClickListener()
+		.setItems(urlNames, null);
+	final AlertDialog d = builder.create();
+	d.setOnShowListener(new DialogInterface.OnShowListener()
 	{
-	    public void onClick(DialogInterface dialog, int which)
+	    @Override
+	    public void onShow(DialogInterface dialog)
 	    {
-		// The 'which' argument contains the index position
-		// of the selected item
-		loadUrl(urls[which]);
+
+		ListView b = d.getListView();
+		b.setOnItemClickListener(new AdapterView.OnItemClickListener()
+		{
+		    @Override
+		    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+		    {
+			// TODO Do something
+
+			//Dismiss once everything is OK.
+			// d.dismiss();
+			if (urls[position] != null) {
+			    d.dismiss();
+			    loadUrl(urls[position]);
+			}
+			    
+		    }
+		});
 	    }
 	});
-	AlertDialog dialog = builder.create();
-	dialog.show();
+	d.show();
     }
 
     public void initUrlBox()
