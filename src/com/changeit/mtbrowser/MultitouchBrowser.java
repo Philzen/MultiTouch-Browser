@@ -254,7 +254,7 @@ public class MultitouchBrowser extends Activity
 	    } else if (item.getItemId() == 2) {
 		showLinkList();
 	    } else if (item.getItemId() == 3) {
-		webviewMultitouchPolyfill.setPolyfillAllTouches(item.isChecked());
+		webviewMultitouchPolyfill.setPolyfillAllTouches(!item.isChecked());
 		toggleMenuCheckbox(item);
 	    } else if (item.getItemId() == 4) {
 		if (item.isChecked()) {
