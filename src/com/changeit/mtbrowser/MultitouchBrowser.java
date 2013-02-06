@@ -168,7 +168,7 @@ public class MultitouchBrowser extends Activity
 		public boolean onJsAlert(WebView view, String url, String message, JsResult result)
 		{
 		    Alert alert = new Alert(view);
-		    alert.show(message + ", Javascript Result [" + result.toString() + "];");
+		    alert.show(message);
 		    return true;
 		}
 
