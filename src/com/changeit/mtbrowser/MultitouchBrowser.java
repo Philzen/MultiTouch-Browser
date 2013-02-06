@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -40,7 +42,7 @@ public class MultitouchBrowser extends Activity
     private boolean stateIsLoading = false;
     final String[] urls;
     final String[] urlNames;
-    
+
     public MultitouchBrowser()
     {
 	urls = new String[]{
@@ -78,8 +80,9 @@ public class MultitouchBrowser extends Activity
     public void showUrlBar(boolean focus)
     {
 	AddressBar.setVisibility(View.VISIBLE);
-	if (focus)
+	if (focus) {
 	    AddressBar.requestFocus();
+	}
     }
 
     public void hideUrlBar()
@@ -143,7 +146,7 @@ public class MultitouchBrowser extends Activity
 		    if (stateIsLoading == false) {
 			//Make the bar disappear after URL is loaded, and changes string to Loading...
 			MyActivity.setTitle("Loading ... ");
-			showUrlBar(false); 
+			showUrlBar(false);
 			stateIsLoading = true;
 		    } else if (progress == 100) {
 			MyActivity.setTitle(view.getTitle());
@@ -153,7 +156,6 @@ public class MultitouchBrowser extends Activity
 			urlTextInput.setText(view.getUrl());
 		    }
 		    MyActivity.setProgress(progress * 100); //Make the bar disappear after URL is loaded
-
 		}
 
 		@Override
@@ -169,10 +171,28 @@ public class MultitouchBrowser extends Activity
 		    alert.show(message + ", Javascript Result [" + result.toString() + "];");
 		    return true;
 		}
+
+		@Override
+		public void onConsoleMessage(String message, int lineNumber, String sourceID)
+		{
+		    // TODO Auto-generated method stub
+		    Log.v("console", "invoked: onConsoleMessage() - " + sourceID + ":"
+			    + lineNumber + " - " + message);
+		    super.onConsoleMessage(message, lineNumber, sourceID);
+		}
+
+		@Override
+		public boolean onConsoleMessage(ConsoleMessage cm)
+		{
+		    Log.v("console", cm.message() + " -- From line "
+			    + cm.lineNumber() + " of "
+			    + cm.sourceId());
+		    return true;
+		}
 	    };
 
 	    webview = new WebView(this);
-
+	    webview.getSettings().setNavDump(true);
 	    // remove white invisible scrollbar which otherwise generated white bar on the right side
 	    webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
 
@@ -237,7 +257,7 @@ public class MultitouchBrowser extends Activity
 		webviewMultitouchPolyfill.setPolyfillAllTouches(item.isChecked());
 		toggleMenuCheckbox(item);
 	    } else if (item.getItemId() == 4) {
-		if (item.isChecked()) { 
+		if (item.isChecked()) {
 		    menu.findItem(3).setEnabled(false);
 		    webviewMultitouchPolyfill.setEnabled(false);
 		} else {
@@ -253,7 +273,8 @@ public class MultitouchBrowser extends Activity
 	return super.onOptionsItemSelected(item);
     }
 
-    protected boolean toggleMenuCheckbox(MenuItem item) {
+    protected boolean toggleMenuCheckbox(MenuItem item)
+    {
 	if (item.isChecked()) {
 	    item.setIcon(android.R.drawable.checkbox_off_background);
 	    item.setChecked(false);
@@ -264,7 +285,7 @@ public class MultitouchBrowser extends Activity
 	    return true;
 	}
     }
-    
+
     protected void loadUrl(String url)
     {
 	urlTextInput.setText(url, TextView.BufferType.NORMAL);
