@@ -204,7 +204,14 @@ public class MultitouchBrowser extends Activity
 	    // remove white invisible scrollbar which otherwise generated white bar on the right side
 	    webview.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
 
-	    webviewMultitouchPolyfill = new WebClient(webview);
+	    webviewMultitouchPolyfill = new WebClient(webview)
+	    {
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url)
+		{
+		    return false;
+		}	
+	    };
 	    webviewMultitouchPolyfill.setPolyfillAllTouches(false);
 	    webview.setWebChromeClient(wcc);
 	}
@@ -298,6 +305,7 @@ public class MultitouchBrowser extends Activity
     {
 	urlTextInput.setText(url, TextView.BufferType.NORMAL);
 	webview.loadUrl(url);
+	Log.d("changeit", "loadUrl " + url);
     }
 
     protected void showExitDialog()
