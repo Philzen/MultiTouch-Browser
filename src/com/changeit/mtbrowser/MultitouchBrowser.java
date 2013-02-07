@@ -284,7 +284,7 @@ public class MultitouchBrowser extends Activity
 		this.menu = menu;
 		menu.add(1, 4, Menu.FIRST + 0, "Multitouch").setIcon(android.R.drawable.checkbox_on_background).setChecked(true);
 		menu.add(1, 3, Menu.FIRST + 1, "Polyfill all").setIcon(android.R.drawable.checkbox_off_background).setChecked(false);
-		menu.add(1, 2, Menu.FIRST + 2, "Cool Multitouch Links");
+		menu.add(1, 2, Menu.FIRST + 2, "Cool Links").setIcon(android.R.drawable.ic_menu_mapmode);
 //	menu.add(1, 1, Menu.FIRST + 3, "Add").setEnabled(false);
 //	menu.add(1, 0, Menu.FIRST + 4, "Go to URL...");
 //	menu.add(1, 5, Menu.FIRST + 5, "Preferences");
